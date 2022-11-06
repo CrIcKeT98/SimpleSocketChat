@@ -89,7 +89,6 @@ int ConnectWindow::getWindowData(sockaddr_in& sock_buff){
         return 0;
     }
 
-    //sock_buff.sin_addr.s_addr = htonl(sock_buff.sin_addr.s_addr);
     getPort(sock_buff);
 
     return 1;
