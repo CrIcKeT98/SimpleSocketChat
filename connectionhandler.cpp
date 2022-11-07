@@ -52,8 +52,10 @@ void connectionHandler::recvMessage(){
     if(m_app_type == applicationType::CLIENT){
         while(true){
             l_result = m_clientHandler->recvMsg();
-            if(l_result == 0)
+            if(l_result == 0){
                 emit signalCloseSocket();
+                return;
+            }
             else
                 emit signalRecvMsg();
         }

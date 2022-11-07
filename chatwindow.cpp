@@ -34,5 +34,6 @@ void ChatWindow::slotRecvMsg(){
 }
 
 void ChatWindow::slotCloseSocket(){
+    qDebug() << "close socket";
     m_connectionHandle.closeSocket();
 }
