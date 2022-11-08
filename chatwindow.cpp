@@ -15,6 +15,8 @@ ChatWindow::ChatWindow(connectionHandler& h, QWidget *parent) :
     else
         this->setWindowTitle("Server");
 
+    ui->ipLine->setText(h.getHostIP());
+    ui->socketTypeLine->setText(h.getSocketType() == __socket_type::SOCK_STREAM ? "TCP" : "UDP");
     ui->sendMsgTextEdit->setFocus();
 }
 

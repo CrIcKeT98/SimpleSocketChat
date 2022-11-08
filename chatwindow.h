@@ -24,7 +24,6 @@ private slots:
     void slotCloseSocket();
     void slotAcceptConnection();
 
-
 private:
     connectionHandler& m_connectionHandle;
     Ui::ChatWindow *ui;

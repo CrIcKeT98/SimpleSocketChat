@@ -2,6 +2,11 @@
 #define CONNECTIONHANDLER_H
 
 #include <QObject>
+#include <QNetworkAccessManager>
+#include <QNetworkRequest>
+#include <QNetworkReply>
+#include <QUrl>
+
 #include <thread>
 #include <basesocket.h>
 
@@ -42,6 +47,11 @@ public:
     connectionStatus getConnectionState();
     char* getRecvMessage();
     applicationType getAppType();
+    __socket_type getSocketType();
+    QString getHostIP();
+    int getHostPort();
+
+    QNetworkAccessManager* getNetworkManager();
 
 private:
     std::unique_ptr<baseSocket> m_socketHandler;
@@ -50,6 +60,7 @@ private:
 
     std::thread m_recvThread;
     std::thread m_acceptConnection;
+
 signals:
     void signalRecvMsg();
     void signalCloseSocket();

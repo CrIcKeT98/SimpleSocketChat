@@ -21,3 +21,7 @@ int baseSocket::getSocket() const{
 char* baseSocket::getRecvBuff() const{
     return m_recvBuff.get();
 }
+
+__socket_type baseSocket::getSocketType() const{
+    return m_socket_type;
+}
