@@ -8,12 +8,12 @@ public:
     clientSocket(__socket_type t, sockaddr_in a);
     ~clientSocket();
 
-    size_t sendMsg(QString&) override;
-    size_t recvMsg() override;
-
-    int acceptConnection() override;
     int initSocket() override;
     void closeSocket() override;
+    int acceptConnection() override;
+
+    size_t sendMsg(QString&) override;
+    size_t recvMsg() override;
 };
 
 #endif // CLIENTSOCKET_H

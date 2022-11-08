@@ -8,12 +8,12 @@ public:
     serverSocket(__socket_type t, sockaddr_in a);
     ~serverSocket();
 
+    int initSocket() override;
+    void closeSocket() override;
+    int acceptConnection() override;
+
     size_t sendMsg(QString&) override;
     size_t recvMsg() override;
-
-    int initSocket() override;
-    int acceptConnection() override;
-    void closeSocket() override;
 
 private:
     int m_slaveSocket;

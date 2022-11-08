@@ -1,12 +1,12 @@
-#include "connectwindow.h"
-#include "ui_connectwindow.h"
 #include <QRegularExpressionValidator>
 #include <QMessageBox>
+#include "connectwindow.h"
+#include "ui_connectwindow.h"
 
 ConnectWindow::ConnectWindow(connectionHandler& h, QWidget *parent)
-    : m_connectionHandle(h)
-    ,QMainWindow(parent)
-    , ui(new Ui::ConnectWindow)
+    : QMainWindow(parent),
+    m_connectionHandle(h),
+    ui(new Ui::ConnectWindow)
 {
     ui->setupUi(this);
 
@@ -34,6 +34,12 @@ void ConnectWindow::initWindow(){
 
     ui->ipLine->setValidator(ipValidator);
     ui->portLine->setValidator(portValidator);
+}
+
+void ConnectWindow::connectSignalsToSlots(){
+    connect(&this->m_connectionHandle, SIGNAL(signalRecvMsg()), m_chatWindow.get(), SLOT(slotRecvMsg()));
+    connect(&this->m_connectionHandle, SIGNAL(signalCloseSocket()), m_chatWindow.get(), SLOT(slotCloseSocket()));
+    connect(&this->m_connectionHandle, SIGNAL(signalAcceptConnection()), m_chatWindow.get(), SLOT(slotAcceptConnection()));
 }
 
 bool ConnectWindow::validateWindow(){
@@ -71,15 +77,6 @@ bool ConnectWindow::validateStreamType(){
     return true;
 }
 
-void ConnectWindow::getPort(sockaddr_in& sock_buff){
-    sock_buff.sin_family = AF_INET;
-
-    if(ui->portLine->text().isEmpty())
-        sock_buff.sin_port = 0;
-    else
-        sock_buff.sin_port = htons(ui->portLine->text().toInt());
-}
-
 int ConnectWindow::getWindowData(sockaddr_in& sock_buff){
     QString l_buff = ui->ipLine->text();
 
@@ -94,10 +91,13 @@ int ConnectWindow::getWindowData(sockaddr_in& sock_buff){
     return 1;
 }
 
-void ConnectWindow::connectSignalsToSlots(){
-    connect(&this->m_connectionHandle, SIGNAL(signalRecvMsg()), m_chatWindow.get(), SLOT(slotRecvMsg()));
-    connect(&this->m_connectionHandle, SIGNAL(signalCloseSocket()), m_chatWindow.get(), SLOT(slotCloseSocket()));
-    connect(&this->m_connectionHandle, SIGNAL(signalAcceptConnection()), m_chatWindow.get(), SLOT(slotAcceptConnection()));
+void ConnectWindow::getPort(sockaddr_in& sock_buff){
+    sock_buff.sin_family = AF_INET;
+
+    if(ui->portLine->text().isEmpty())
+        sock_buff.sin_port = 0;
+    else
+        sock_buff.sin_port = htons(ui->portLine->text().toInt());
 }
 
 void ConnectWindow::on_connectButton_clicked()

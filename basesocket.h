@@ -1,12 +1,12 @@
 #ifndef BASESOCKET_H
 #define BASESOCKET_H
+#include <QString>
+#include <memory>
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <unistd.h>
-#include <memory>
-#include <QString>
 
 const size_t RECV_BUFF = 1400;
 
@@ -22,6 +22,7 @@ public:
 
     virtual size_t sendMsg(QString&) = 0;
     virtual size_t recvMsg() = 0;
+
     void clearBuff();
 
     int getSocket() const;

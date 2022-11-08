@@ -17,17 +17,14 @@ public:
     ConnectWindow(connectionHandler& h, QWidget *parent = nullptr);
     ~ConnectWindow();
 
-private slots:
-    void on_connectButton_clicked();
-    void on_createNewConnectButton_clicked();
-
 private:
     void initWindow();
+    void connectSignalsToSlots();
+
     bool validateWindow();
     bool validateIP();
     bool validatePort();
     bool validateStreamType();
-    void connectSignalsToSlots();
 
     int getWindowData(sockaddr_in&);
     void getPort(sockaddr_in&);
@@ -35,5 +32,9 @@ private:
     connectionHandler& m_connectionHandle;
     std::unique_ptr<ChatWindow> m_chatWindow;
     Ui::ConnectWindow *ui;
+
+private slots:
+    void on_connectButton_clicked();
+    void on_createNewConnectButton_clicked();
 };
 #endif // CONNECTWINDOW_H

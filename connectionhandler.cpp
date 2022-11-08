@@ -1,8 +1,7 @@
+#include <QEventLoop>
 #include "connectionhandler.h"
 #include "clientsocket.h"
 #include "serversocket.h"
-#include <QEventLoop>
-#include <QDebug>
 
 connectionHandler::connectionHandler(QWidget* parent)
 {
@@ -39,6 +38,20 @@ void connectionHandler::createServer(__socket_type t, sockaddr_in a){
         m_state = connectionStatus::LISTEN_ERROR;
 }
 
+void connectionHandler::createWorkCycle(){
+    m_recvThread = std::thread(&connectionHandler::recvMessage, std::ref(*this));
+    m_recvThread.detach();
+}
+
+void connectionHandler::createAcceptCycle(){
+    m_acceptConnection = std::thread(&connectionHandler::acceptConnection, std::ref(*this));
+    m_acceptConnection.detach();
+}
+
+void connectionHandler::closeSocket(){
+    m_socketHandler->closeSocket();
+}
+
 void connectionHandler::acceptConnection(){
     if(m_socketHandler->acceptConnection() > 0){
         emit signalAcceptConnection();
@@ -46,10 +59,12 @@ void connectionHandler::acceptConnection(){
     }
 }
 
+void connectionHandler::clearBuff(){
+    m_socketHandler->clearBuff();
+}
+
 size_t connectionHandler::sendMessage(QString s){
-    m_socketHandler->sendMsg(s);
-    //TODO: return correct value
-    return 0;
+    return m_socketHandler->sendMsg(s);
 }
 
 void connectionHandler::recvMessage(){
@@ -63,22 +78,12 @@ void connectionHandler::recvMessage(){
     }
 }
 
+
+//Getters
+
+
 char* connectionHandler::getRecvMessage(){
     return m_socketHandler->getRecvBuff();
-}
-
-void connectionHandler::createWorkCycle(){
-    m_recvThread = std::thread(&connectionHandler::recvMessage, std::ref(*this));
-    m_recvThread.detach();
-}
-
-void connectionHandler::createAcceptCycle(){
-    m_acceptConnection = std::thread(&connectionHandler::acceptConnection, std::ref(*this));
-    m_acceptConnection.detach();
-}
-
-void connectionHandler::clearBuff(){
-    m_socketHandler->clearBuff();
 }
 
 connectionStatus connectionHandler::getConnectionState(){
@@ -114,8 +119,4 @@ QString connectionHandler::getHostIP(){
 
 QString connectionHandler::getHostPort(){
     return QString::number(m_socketHandler->getSocketPort());
-}
-
-void connectionHandler::closeSocket(){
-    m_socketHandler->closeSocket();
 }

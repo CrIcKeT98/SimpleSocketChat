@@ -18,15 +18,15 @@ public:
 
     void startTransmission();
 
+private:
+    connectionHandler& m_connectionHandle;
+    Ui::ChatWindow *ui;
+
 private slots:
     void on_sendButton_clicked();
     void slotRecvMsg();
     void slotCloseSocket();
     void slotAcceptConnection();
-
-private:
-    connectionHandler& m_connectionHandle;
-    Ui::ChatWindow *ui;
 };
 
 #endif // CHATWINDOW_H

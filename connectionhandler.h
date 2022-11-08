@@ -33,25 +33,24 @@ public:
     explicit connectionHandler(QWidget *parent = nullptr);
     ~connectionHandler() = default;
 
-    size_t sendMessage(QString);
-    void recvMessage();
-    void closeSocket();
-
     void createClient(__socket_type, sockaddr_in);
     void createServer(__socket_type, sockaddr_in);
     void createWorkCycle();
     void createAcceptCycle();
+
+    void closeSocket();
     void acceptConnection();
     void clearBuff();
 
-    connectionStatus getConnectionState();
+    size_t sendMessage(QString);
+    void recvMessage();
+
     char* getRecvMessage();
+    connectionStatus getConnectionState();
     applicationType getAppType();
     __socket_type getSocketType();
     QString getHostIP();
     QString getHostPort();
-
-    QNetworkAccessManager* getNetworkManager();
 
 private:
     std::unique_ptr<baseSocket> m_socketHandler;

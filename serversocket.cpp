@@ -1,18 +1,13 @@
 #include <QMessageBox>
 #include "serversocket.h"
-#include <QDebug>
 
 serverSocket::serverSocket(__socket_type t, sockaddr_in a) : baseSocket(t, a)
 {
 
 }
 
-size_t serverSocket::sendMsg(QString& s){
-    return send(m_slaveSocket, s.toStdString().c_str(), s.size(), 0);
-}
-
-size_t serverSocket::recvMsg(){
-    return m_countRecvBytes = recv(m_slaveSocket, m_recvBuff.get(), RECV_BUFF, 0);
+serverSocket::~serverSocket(){
+    serverSocket::closeSocket();
 }
 
 int serverSocket::initSocket(){
@@ -46,6 +41,10 @@ void serverSocket::closeSocket(){
     close(m_slaveSocket);
 }
 
-serverSocket::~serverSocket(){
-    serverSocket::closeSocket();
+size_t serverSocket::sendMsg(QString& s){
+    return send(m_slaveSocket, s.toStdString().c_str(), s.size(), 0);
+}
+
+size_t serverSocket::recvMsg(){
+    return m_countRecvBytes = recv(m_slaveSocket, m_recvBuff.get(), RECV_BUFF, 0);
 }

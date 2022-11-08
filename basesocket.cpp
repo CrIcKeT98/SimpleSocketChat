@@ -4,16 +4,15 @@
 baseSocket::baseSocket(__socket_type t, sockaddr_in a) : m_socket_type(t), m_addr_in(a), m_recvBuff(std::make_unique<char[]>(RECV_BUFF))
 {
     m_socket = socket(AF_INET, m_socket_type, 0);
-
-    /*if(m_socket < 0)
-        m_socket_state = baseStatus::ERROR;
-    else
-        m_socket_state = baseStatus::OK;*/
 }
 
 void baseSocket::clearBuff(){
     memset(m_recvBuff.get(), 0, RECV_BUFF);
 }
+
+
+//Getters
+
 
 int baseSocket::getSocket() const{
     return m_socket;
