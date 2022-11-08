@@ -10,12 +10,8 @@ baseSocket::baseSocket(__socket_type t, sockaddr_in a) : m_socket_type(t), m_add
         m_socket_state = baseStatus::OK;*/
 }
 
-size_t baseSocket::sendMsg(QString& s, int size){
-    return send(m_socket, s.toStdString().c_str(), size, 0);
-}
-
-size_t baseSocket::recvMsg(){
-    return m_countRecvBytes = recv(m_socket, m_recvBuff.get(), RECV_BUFF, 0);
+void baseSocket::clearBuff(){
+    memset(m_recvBuff.get(), 0, RECV_BUFF);
 }
 
 int baseSocket::getSocket() const{

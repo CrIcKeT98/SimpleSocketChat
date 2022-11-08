@@ -1,7 +1,6 @@
 #include "connectionhandler.h"
 #include "clientsocket.h"
 #include "serversocket.h"
-#include <QDebug>
 
 connectionHandler::connectionHandler(QWidget* parent)
 {
@@ -11,10 +10,10 @@ connectionHandler::connectionHandler(QWidget* parent)
 void connectionHandler::createClient(__socket_type t, sockaddr_in a){
     m_app_type = applicationType::CLIENT;
 
-    if(m_clientHandler == nullptr)
-        m_clientHandler = std::make_unique<clientSocket>(t, a);
+    if(m_socketHandler == nullptr)
+        m_socketHandler = std::make_unique<clientSocket>(t, a);
 
-    if(m_clientHandler->initSocket() == 0)
+    if(m_socketHandler->initSocket() == 0)
         m_state = connectionStatus::ESTABLISHED;
     else
         m_state = connectionStatus::CONNECT_ERROR;
@@ -23,10 +22,10 @@ void connectionHandler::createClient(__socket_type t, sockaddr_in a){
 void connectionHandler::createServer(__socket_type t, sockaddr_in a){
     m_app_type = applicationType::SERVER;
 
-    if(m_serverHandler == nullptr)
-        m_serverHandler = std::make_unique<serverSocket>(t, a);
+    if(m_socketHandler == nullptr)
+        m_socketHandler = std::make_unique<serverSocket>(t, a);
 
-    int l_state = m_serverHandler->initSocket();
+    int l_state = m_socketHandler->initSocket();
 
     if(l_state == 0)
         m_state = connectionStatus::SERVER_READY;
@@ -38,51 +37,38 @@ void connectionHandler::createServer(__socket_type t, sockaddr_in a){
         m_state = connectionStatus::LISTEN_ERROR;
 }
 
-size_t connectionHandler::sendMessage(QString s){
-    if(this->m_app_type==applicationType::SERVER)
-        m_serverHandler->sendMsg(s, s.size());
-    else
-        m_clientHandler->sendMsg(s, s.size());
+void connectionHandler::acceptConnection(){
+    m_socketHandler->acceptConnection();
+}
 
+size_t connectionHandler::sendMessage(QString s){
+    m_socketHandler->sendMsg(s);
+    //TODO: return correct value
     return 0;
 }
 
 void connectionHandler::recvMessage(){
-    int l_result;
-    if(m_app_type == applicationType::CLIENT){
-        while(true){
-            l_result = m_clientHandler->recvMsg();
-            if(l_result == 0){
-                emit signalCloseSocket();
-                return;
-            }
-            else
-                emit signalRecvMsg();
+    while(true){
+        if(m_socketHandler->recvMsg() == 0){
+            emit signalCloseSocket();
+            return;
         }
-    }
-    else{
-        while(true){
-            m_serverHandler->recvMsg();
+        else
             emit signalRecvMsg();
-        }
     }
 }
 
 char* connectionHandler::getRecvMessage(){
-    if(m_app_type == applicationType::CLIENT)
-        return m_clientHandler->getRecvBuff();
-    else
-        return m_serverHandler->getRecvBuff();
+    return m_socketHandler->getRecvBuff();
 }
 
 void connectionHandler::createWorkCycle(){
-    if(m_app_type == applicationType::CLIENT)
-        m_clientHandler->getSocket();
-    else
-        m_serverHandler->getSocket();
-
     m_recvThread = std::thread(&connectionHandler::recvMessage, std::ref(*this));
     m_recvThread.detach();
+}
+
+void connectionHandler::clearBuff(){
+    m_socketHandler->clearBuff();
 }
 
 connectionStatus connectionHandler::getConnectionState(){
@@ -90,9 +76,5 @@ connectionStatus connectionHandler::getConnectionState(){
 }
 
 void connectionHandler::closeSocket(){
-    if(m_app_type == applicationType::CLIENT){
-        m_clientHandler->closeSocket();
-    }
-    else
-        m_serverHandler->closeSocket();
+    m_socketHandler->closeSocket();
 }

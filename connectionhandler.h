@@ -35,13 +35,14 @@ public:
     void createClient(__socket_type, sockaddr_in);
     void createServer(__socket_type, sockaddr_in);
     void createWorkCycle();
+    void acceptConnection();
+    void clearBuff();
 
     connectionStatus getConnectionState();
     char* getRecvMessage();
 
 private:
-    std::unique_ptr<baseSocket> m_serverHandler;
-    std::unique_ptr<baseSocket> m_clientHandler;
+    std::unique_ptr<baseSocket> m_socketHandler;
     applicationType m_app_type;
     connectionStatus m_state;
 

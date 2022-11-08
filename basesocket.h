@@ -18,9 +18,11 @@ public:
 
     virtual int initSocket() = 0;
     virtual void closeSocket() = 0;
+    virtual void acceptConnection() = 0;
 
-    size_t sendMsg(QString&, int);
-    size_t recvMsg();
+    virtual size_t sendMsg(QString&) = 0;
+    virtual size_t recvMsg() = 0;
+    void clearBuff();
 
     int getSocket() const;
     char* getRecvBuff() const;

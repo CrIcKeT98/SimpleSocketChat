@@ -122,6 +122,7 @@ void ConnectWindow::on_connectButton_clicked()
 
     connectSignalsToSlots();
     m_chatWindow->show();
+    m_chatWindow->startTransmission();
 
     this->close();
 }
@@ -158,7 +159,10 @@ void ConnectWindow::on_createNewConnectButton_clicked()
     m_chatWindow = std::make_unique<ChatWindow>(m_connectionHandle);
 
     connectSignalsToSlots();
+
+    m_connectionHandle.acceptConnection();
     m_chatWindow->show();
+    m_chatWindow->startTransmission();
 
     this->close();
 }

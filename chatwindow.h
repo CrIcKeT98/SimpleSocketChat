@@ -16,6 +16,8 @@ public:
     ChatWindow(connectionHandler&, QWidget *parent = nullptr);
     ~ChatWindow();
 
+    void startTransmission();
+
 private slots:
     void on_sendButton_clicked();
     void slotRecvMsg();

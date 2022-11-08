@@ -1,4 +1,5 @@
 #include <QTime>
+#include <QMessageBox>
 #include "chatwindow.h"
 #include "ui_chatwindow.h"
 
@@ -9,14 +10,15 @@ ChatWindow::ChatWindow(connectionHandler& h, QWidget *parent) :
 {
     ui->setupUi(this);
     ui->sendMsgTextEdit->setFocus();
-
-    m_connectionHandle.createWorkCycle();
 }
 
 ChatWindow::~ChatWindow()
 {
-    qDebug() << "dector ChatWindow";
     delete ui;
+}
+
+void ChatWindow::startTransmission(){
+    m_connectionHandle.createWorkCycle();
 }
 
 void ChatWindow::on_sendButton_clicked()
@@ -31,9 +33,12 @@ void ChatWindow::slotRecvMsg(){
     result_str += ": " + buff + '\n';
 
     ui->recvMsgTextEdit->insertPlainText(result_str);
+    m_connectionHandle.clearBuff();
 }
 
 void ChatWindow::slotCloseSocket(){
-    qDebug() << "close socket";
+    QMessageBox msg;
+    QMessageBox::warning(&msg, "Warning!", "Your interlocutor has closed the chat!");
+
     m_connectionHandle.closeSocket();
 }
