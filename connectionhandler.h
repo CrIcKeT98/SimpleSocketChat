@@ -49,7 +49,7 @@ public:
     applicationType getAppType();
     __socket_type getSocketType();
     QString getHostIP();
-    int getHostPort();
+    QString getHostPort();
 
     QNetworkAccessManager* getNetworkManager();
 

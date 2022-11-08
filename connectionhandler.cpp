@@ -2,8 +2,6 @@
 #include "clientsocket.h"
 #include "serversocket.h"
 #include <QEventLoop>
-#include <QJsonObject>
-#include <QJsonDocument>
 #include <QDebug>
 
 connectionHandler::connectionHandler(QWidget* parent)
@@ -42,11 +40,9 @@ void connectionHandler::createServer(__socket_type t, sockaddr_in a){
 }
 
 void connectionHandler::acceptConnection(){
-    while(1){
-        if(m_socketHandler->acceptConnection() > 0){
-            emit signalAcceptConnection();
-            return;
-        }
+    if(m_socketHandler->acceptConnection() > 0){
+        emit signalAcceptConnection();
+        return;
     }
 }
 
@@ -101,27 +97,23 @@ QString connectionHandler::getHostIP(){
     QString l_res;
     QEventLoop l_eventLoop;
     QNetworkAccessManager l_networkManager;
-    QNetworkRequest l_request(QUrl("https://api.myip.com/"));
+    QNetworkRequest l_request(QUrl("http://ipinfo.io/ip"));
 
     QObject::connect(&l_networkManager, SIGNAL(finished(QNetworkReply*)), &l_eventLoop, SLOT(quit()));
 
-    QNetworkReply *reply = l_networkManager.get(l_request);
+    std::unique_ptr<QNetworkReply> reply(l_networkManager.get(l_request));
     l_eventLoop.exec();
 
-    QJsonObject a;
     if (reply->error() == QNetworkReply::NoError)
         l_res = reply->readAll();
-    else{
+    else
         l_res = "Error";
-        delete reply;
-        return l_res;
-    }
-
-    QJsonDocument l_doc = QJsonDocument::fromJson(l_res.toUtf8());
-    QJsonObject l_jsonObj = l_doc.object();
-    l_res = l_jsonObj.value(QString("ip")).toString();
 
     return l_res;
+}
+
+QString connectionHandler::getHostPort(){
+    return QString::number(m_socketHandler->getSocketPort());
 }
 
 void connectionHandler::closeSocket(){

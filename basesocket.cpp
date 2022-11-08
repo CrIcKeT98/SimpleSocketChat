@@ -1,4 +1,5 @@
 #include "basesocket.h"
+#include <QDebug>
 
 baseSocket::baseSocket(__socket_type t, sockaddr_in a) : m_socket_type(t), m_addr_in(a), m_recvBuff(std::make_unique<char[]>(RECV_BUFF))
 {
@@ -24,4 +25,8 @@ char* baseSocket::getRecvBuff() const{
 
 __socket_type baseSocket::getSocketType() const{
     return m_socket_type;
+}
+
+int baseSocket::getSocketPort() const{
+    return m_addr_in.sin_port;
 }

@@ -1,5 +1,6 @@
 #include <QMessageBox>
 #include "serversocket.h"
+#include <QDebug>
 
 serverSocket::serverSocket(__socket_type t, sockaddr_in a) : baseSocket(t, a)
 {
@@ -21,6 +22,11 @@ int serverSocket::initSocket(){
 
     if(bind(m_socket, reinterpret_cast<sockaddr*>(&m_addr_in), sizeof(m_addr_in)) < 0)
         return -2;
+
+    sockaddr_in l_addr_in;
+    socklen_t l_sockLen;
+    if(getsockname(m_socket, reinterpret_cast<sockaddr*>(&l_addr_in), &l_sockLen) == 0)
+        m_addr_in.sin_port = htons(l_addr_in.sin_port);
 
     if(listen(m_socket, SOMAXCONN) < 0)
         return -3;

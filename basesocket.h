@@ -27,6 +27,7 @@ public:
     int getSocket() const;
     char* getRecvBuff() const;
     __socket_type getSocketType() const;
+    int getSocketPort() const;
 
 protected:
     int m_socket;
