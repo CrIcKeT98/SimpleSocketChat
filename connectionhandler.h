@@ -35,11 +35,13 @@ public:
     void createClient(__socket_type, sockaddr_in);
     void createServer(__socket_type, sockaddr_in);
     void createWorkCycle();
+    void createAcceptCycle();
     void acceptConnection();
     void clearBuff();
 
     connectionStatus getConnectionState();
     char* getRecvMessage();
+    applicationType getAppType();
 
 private:
     std::unique_ptr<baseSocket> m_socketHandler;
@@ -47,10 +49,11 @@ private:
     connectionStatus m_state;
 
     std::thread m_recvThread;
-
+    std::thread m_acceptConnection;
 signals:
     void signalRecvMsg();
     void signalCloseSocket();
+    void signalAcceptConnection();
 };
 
 #endif // CONNECTIONHANDLER_H

@@ -30,6 +30,6 @@ clientSocket::~clientSocket(){
     clientSocket::closeSocket();
 }
 
-void clientSocket::acceptConnection(){
+int clientSocket::acceptConnection(){
     //dummy function
 }

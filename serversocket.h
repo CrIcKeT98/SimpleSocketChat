@@ -12,7 +12,7 @@ public:
     size_t recvMsg() override;
 
     int initSocket() override;
-    void acceptConnection() override;
+    int acceptConnection() override;
     void closeSocket() override;
 
 private:

@@ -97,6 +97,7 @@ int ConnectWindow::getWindowData(sockaddr_in& sock_buff){
 void ConnectWindow::connectSignalsToSlots(){
     connect(&this->m_connectionHandle, SIGNAL(signalRecvMsg()), m_chatWindow.get(), SLOT(slotRecvMsg()));
     connect(&this->m_connectionHandle, SIGNAL(signalCloseSocket()), m_chatWindow.get(), SLOT(slotCloseSocket()));
+    connect(&this->m_connectionHandle, SIGNAL(signalAcceptConnection()), m_chatWindow.get(), SLOT(slotAcceptConnection()));
 }
 
 void ConnectWindow::on_connectButton_clicked()
@@ -160,9 +161,8 @@ void ConnectWindow::on_createNewConnectButton_clicked()
 
     connectSignalsToSlots();
 
-    m_connectionHandle.acceptConnection();
+    m_connectionHandle.createAcceptCycle();
     m_chatWindow->show();
-    m_chatWindow->startTransmission();
 
     this->close();
 }

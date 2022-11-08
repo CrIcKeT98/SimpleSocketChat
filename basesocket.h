@@ -18,7 +18,7 @@ public:
 
     virtual int initSocket() = 0;
     virtual void closeSocket() = 0;
-    virtual void acceptConnection() = 0;
+    virtual int acceptConnection() = 0;
 
     virtual size_t sendMsg(QString&) = 0;
     virtual size_t recvMsg() = 0;

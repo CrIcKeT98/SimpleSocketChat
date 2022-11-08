@@ -28,8 +28,8 @@ int serverSocket::initSocket(){
     return 0;
 }
 
-void serverSocket::acceptConnection(){
-    m_slaveSocket = accept(m_socket, 0,0);
+int serverSocket::acceptConnection(){
+    return m_slaveSocket = accept(m_socket, 0,0);
 }
 
 void serverSocket::closeSocket(){

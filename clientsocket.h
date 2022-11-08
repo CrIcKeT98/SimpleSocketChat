@@ -11,7 +11,7 @@ public:
     size_t sendMsg(QString&) override;
     size_t recvMsg() override;
 
-    void acceptConnection() override;
+    int acceptConnection() override;
     int initSocket() override;
     void closeSocket() override;
 };

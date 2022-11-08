@@ -38,7 +38,12 @@ void connectionHandler::createServer(__socket_type t, sockaddr_in a){
 }
 
 void connectionHandler::acceptConnection(){
-    m_socketHandler->acceptConnection();
+    while(1){
+        if(m_socketHandler->acceptConnection() > 0){
+            emit signalAcceptConnection();
+            return;
+        }
+    }
 }
 
 size_t connectionHandler::sendMessage(QString s){
@@ -67,12 +72,21 @@ void connectionHandler::createWorkCycle(){
     m_recvThread.detach();
 }
 
+void connectionHandler::createAcceptCycle(){
+    m_acceptConnection = std::thread(&connectionHandler::acceptConnection, std::ref(*this));
+    m_acceptConnection.detach();
+}
+
 void connectionHandler::clearBuff(){
     m_socketHandler->clearBuff();
 }
 
 connectionStatus connectionHandler::getConnectionState(){
     return m_state;
+}
+
+applicationType connectionHandler::getAppType(){
+    return m_app_type;
 }
 
 void connectionHandler::closeSocket(){

@@ -4,11 +4,17 @@
 #include "ui_chatwindow.h"
 
 ChatWindow::ChatWindow(connectionHandler& h, QWidget *parent) :
-    m_connectionHandle(h),
     QWidget(parent),
+    m_connectionHandle(h),
     ui(new Ui::ChatWindow)
 {
     ui->setupUi(this);
+
+    if(h.getAppType() == applicationType::CLIENT)
+        this->setWindowTitle("Client");
+    else
+        this->setWindowTitle("Server");
+
     ui->sendMsgTextEdit->setFocus();
 }
 
@@ -41,4 +47,11 @@ void ChatWindow::slotCloseSocket(){
     QMessageBox::warning(&msg, "Warning!", "Your interlocutor has closed the chat!");
 
     m_connectionHandle.closeSocket();
+}
+
+void ChatWindow::slotAcceptConnection(){
+    QMessageBox msg;
+    QMessageBox::warning(&msg, "Notify!", "Client connected!");
+
+    startTransmission();
 }

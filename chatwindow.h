@@ -22,6 +22,7 @@ private slots:
     void on_sendButton_clicked();
     void slotRecvMsg();
     void slotCloseSocket();
+    void slotAcceptConnection();
 
 
 private:
