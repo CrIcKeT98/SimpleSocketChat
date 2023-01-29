@@ -18,13 +18,15 @@ SOURCES += \
     connectwindow.cpp \
     server.cpp
 
+INCLUDEPATH += include
+
 HEADERS += \
-    basehost.h \
-    chatwindow.h \
-    client.h \
-    connectionmanager.h \
-    connectwindow.h \
-    server.h
+    include/basehost.h \
+    include/chatwindow.h \
+    include/client.h \
+    include/connectionmanager.h \
+    include/connectwindow.h \
+    include/server.h
 
 FORMS += \
     chatwindow.ui \
