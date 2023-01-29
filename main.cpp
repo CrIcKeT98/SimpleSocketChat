@@ -1,11 +1,16 @@
 #include "connectwindow.h"
 #include <QApplication>
 
+connectionManager g_connectionManager;
+
 int main(int argc, char *argv[])
 {
     QApplication a(argc, argv);
-    connectionHandler h;
-    ConnectWindow w(h);
+
+    ConnectWindow w;
     w.show();
     return a.exec();
 }
+
+//TODO:
+//UPNP

@@ -1,5 +1,5 @@
-#ifndef CONNECTIONHANDLER_H
-#define CONNECTIONHANDLER_H
+#ifndef CONNECTIONMANAGER_H
+#define CONNECTIONMANAGER_H
 
 #include <QObject>
 #include <QNetworkAccessManager>
@@ -8,7 +8,9 @@
 #include <QUrl>
 
 #include <thread>
-#include <basesocket.h>
+#include "basehost.h"
+
+const size_t RECV_BUFF = 1400;
 
 enum applicationType{
     CLIENT,
@@ -26,39 +28,44 @@ enum connectionStatus{
     CONNECT_ERROR
 };
 
-class connectionHandler : public QObject
+class connectionManager : public QObject
 {
     Q_OBJECT
 public:
-    explicit connectionHandler(QWidget *parent = nullptr);
-    ~connectionHandler() = default;
+    connectionManager();
+    ~connectionManager() = default;
 
-    void createClient(__socket_type, sockaddr_in);
-    void createServer(__socket_type, sockaddr_in);
-    void createWorkCycle();
-    void createAcceptCycle();
+    connectionManager(const connectionManager&) = delete;
+    connectionManager& operator=(const connectionManager&) = delete;
 
-    void closeSocket();
+    void createClient(sockaddr_in, __socket_type);
+    void createServer(sockaddr_in, __socket_type);
+    void createReadThread();
+    void createAcceptConnectionThread();
+
+    void closeSocket(); // ???
+
+    size_t sendMsg(QString);
+    void recvMsg();
     void acceptConnection();
-    void clearBuff();
+    void clearBuffs();
 
-    size_t sendMessage(QString);
-    void recvMessage();
-
-    char* getRecvMessage();
+    QString getRecvMessage(); // ???
     connectionStatus getConnectionState();
     applicationType getAppType();
     __socket_type getSocketType();
-    QString getHostIP();
-    QString getHostPort();
+    size_t getInternalHostPort();
 
 private:
-    std::unique_ptr<baseSocket> m_socketHandler;
+    std::unique_ptr<baseHost> m_hostHandler;
     applicationType m_app_type;
-    connectionStatus m_state;
+    connectionStatus m_connectionState;
+
+    std::unique_ptr<char[]> m_recvBuff;
+    std::unique_ptr<char[]> m_sendBuff;
 
     std::thread m_recvThread;
-    std::thread m_acceptConnection;
+    std::thread m_acceptConnectionThread;
 
 signals:
     void signalRecvMsg();
@@ -66,4 +73,4 @@ signals:
     void signalAcceptConnection();
 };
 
-#endif // CONNECTIONHANDLER_H
+#endif // CONNECTIONMANAGER_H

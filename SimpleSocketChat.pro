@@ -10,21 +10,21 @@ CONFIG += c++17
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
-    basesocket.cpp \
+    basehost.cpp \
     chatwindow.cpp \
-    clientsocket.cpp \
-    connectionhandler.cpp \
+    client.cpp \
+    connectionmanager.cpp \
     main.cpp \
     connectwindow.cpp \
-    serversocket.cpp
+    server.cpp
 
 HEADERS += \
-    basesocket.h \
+    basehost.h \
     chatwindow.h \
-    clientsocket.h \
-    connectionhandler.h \
+    client.h \
+    connectionmanager.h \
     connectwindow.h \
-    serversocket.h
+    server.h
 
 FORMS += \
     chatwindow.ui \

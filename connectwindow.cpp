@@ -3,9 +3,10 @@
 #include "connectwindow.h"
 #include "ui_connectwindow.h"
 
-ConnectWindow::ConnectWindow(connectionHandler& h, QWidget *parent)
+extern connectionManager g_connectionManager;
+
+ConnectWindow::ConnectWindow(QWidget *parent)
     : QMainWindow(parent),
-    m_connectionHandle(h),
     ui(new Ui::ConnectWindow)
 {
     ui->setupUi(this);
@@ -34,12 +35,6 @@ void ConnectWindow::initWindow(){
 
     ui->ipLine->setValidator(ipValidator);
     ui->portLine->setValidator(portValidator);
-}
-
-void ConnectWindow::connectSignalsToSlots(){
-    connect(&this->m_connectionHandle, SIGNAL(signalRecvMsg()), m_chatWindow.get(), SLOT(slotRecvMsg()));
-    connect(&this->m_connectionHandle, SIGNAL(signalCloseSocket()), m_chatWindow.get(), SLOT(slotCloseSocket()));
-    connect(&this->m_connectionHandle, SIGNAL(signalAcceptConnection()), m_chatWindow.get(), SLOT(slotAcceptConnection()));
 }
 
 bool ConnectWindow::validateWindow(){
@@ -78,26 +73,25 @@ bool ConnectWindow::validateStreamType(){
 }
 
 int ConnectWindow::getWindowData(sockaddr_in& sock_buff){
-    QString l_buff = ui->ipLine->text();
+    sock_buff.sin_port = getPort();
 
-    if(inet_pton(AF_INET, l_buff.toStdString().c_str(), &(sock_buff.sin_addr)) == 0){
+    if(inet_pton(AF_INET,
+                 ui->ipLine->text().toStdString().c_str(),
+                 &(sock_buff.sin_addr.s_addr)) == 0)
+    {
         QMessageBox msg;
         QMessageBox::warning(&msg, "Error!", "Entered IP is not corrected!");
         return 0;
     }
 
-    getPort(sock_buff);
-
     return 1;
 }
 
-void ConnectWindow::getPort(sockaddr_in& sock_buff){
-    sock_buff.sin_family = AF_INET;
-
+uint16_t ConnectWindow::getPort(){
     if(ui->portLine->text().isEmpty())
-        sock_buff.sin_port = 0;
-    else
-        sock_buff.sin_port = htons(ui->portLine->text().toInt());
+        return 0;
+
+    return htons(ui->portLine->text().toInt());
 }
 
 void ConnectWindow::on_connectButton_clicked()
@@ -105,65 +99,68 @@ void ConnectWindow::on_connectButton_clicked()
     if(!validateWindow())
         return;
 
-    sockaddr_in sock_buff;
-    memset(&sock_buff, 0, sizeof (sock_buff));
+    sockaddr_in l_sock_buff;
+    memset(&l_sock_buff, 0, sizeof (l_sock_buff));
 
-    if(!getWindowData(sock_buff))
+
+    if(!getWindowData(l_sock_buff))
         return;
 
-    m_connectionHandle.createClient(ui->tcpButton->isChecked() ? SOCK_STREAM : SOCK_DGRAM, sock_buff);
+    l_sock_buff.sin_family = AF_INET;
 
-    if(m_connectionHandle.getConnectionState() != connectionStatus::ESTABLISHED){
+    g_connectionManager.createClient(l_sock_buff, ui->tcpButton->isChecked() ? SOCK_STREAM : SOCK_DGRAM);
+
+    if(g_connectionManager.getConnectionState() != connectionStatus::ESTABLISHED){
         QMessageBox msg;
-        QMessageBox::warning(&msg, "Error!", "Failed to connect to the server!");
-        return;
+        if(g_connectionManager.getConnectionState() == connectionStatus::SOCKET_ERROR){
+            QMessageBox::warning(&msg, "Error!", "Failed to create socket!");
+            return;
+        }
+        else if(g_connectionManager.getConnectionState() == connectionStatus::CONNECT_ERROR){
+            QMessageBox::warning(&msg, "Error!", "Failed to connect to the server!");
+            return;
+        }
     }
 
-    m_chatWindow = std::make_unique<ChatWindow>(m_connectionHandle);
-
-    connectSignalsToSlots();
+    m_chatWindow = std::make_unique<ChatWindow>();
     m_chatWindow->show();
-    m_chatWindow->startTransmission();
 
     this->close();
 }
 
 
-void ConnectWindow::on_createNewConnectButton_clicked()
+void ConnectWindow::on_createServerButton_clicked()
 {    
     if(!validateStreamType())
         return;
 
-    sockaddr_in sock_buff;
-    memset(&sock_buff, 0, sizeof (sock_buff));
+    sockaddr_in l_sock_buff;
+    memset(&l_sock_buff, 0, sizeof (l_sock_buff));
 
-    getPort(sock_buff);
+    l_sock_buff.sin_family = AF_INET;
+    l_sock_buff.sin_addr.s_addr = INADDR_ANY;
+    l_sock_buff.sin_port = getPort();
 
-    m_connectionHandle.createServer(ui->tcpButton->isChecked() ? SOCK_STREAM : SOCK_DGRAM, sock_buff);
+    g_connectionManager.createServer(l_sock_buff, ui->tcpButton->isChecked() ? SOCK_STREAM : SOCK_DGRAM);
 
-    if(m_connectionHandle.getConnectionState() != connectionStatus::SERVER_READY){
+    if(g_connectionManager.getConnectionState() != connectionStatus::SERVER_READY){
         QMessageBox msg;
-        if(m_connectionHandle.getConnectionState() == connectionStatus::SOCKET_ERROR){
+        if(g_connectionManager.getConnectionState() == connectionStatus::SOCKET_ERROR){
             QMessageBox::warning(&msg, "Error!", "Failed to create socket!");
             return;
         }
-        else if(m_connectionHandle.getConnectionState() == connectionStatus::BIND_ERROR){
+        else if(g_connectionManager.getConnectionState() == connectionStatus::BIND_ERROR){
             QMessageBox::warning(&msg, "Error!", "Port is busy!");
             return;
         }
-        else if(m_connectionHandle.getConnectionState() == connectionStatus::LISTEN_ERROR){
+        else if(g_connectionManager.getConnectionState() == connectionStatus::LISTEN_ERROR){
             QMessageBox::warning(&msg, "Error!", "Failed to call listen()!");
             return;
         }
     }
 
-    m_chatWindow = std::make_unique<ChatWindow>(m_connectionHandle);
-
-    connectSignalsToSlots();
-
-    m_connectionHandle.createAcceptCycle();
+    m_chatWindow = std::make_unique<ChatWindow>();
     m_chatWindow->show();
 
     this->close();
 }
-

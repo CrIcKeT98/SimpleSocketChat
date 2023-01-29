@@ -187,7 +187,7 @@
       </widget>
      </item>
      <item>
-      <widget class="QPushButton" name="createNewConnectButton">
+      <widget class="QPushButton" name="createServerButton">
        <property name="minimumSize">
         <size>
          <width>184</width>

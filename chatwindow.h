@@ -2,7 +2,7 @@
 #define CHATWINDOW_H
 
 #include <QWidget>
-#include "connectionhandler.h"
+#include "connectionmanager.h"
 
 namespace Ui {
 class ChatWindow;
@@ -13,13 +13,17 @@ class ChatWindow : public QWidget
     Q_OBJECT
 
 public:
-    ChatWindow(connectionHandler&, QWidget *parent = nullptr);
+    ChatWindow(QWidget *parent = nullptr);
     ~ChatWindow();
 
-    void startTransmission();
-
 private:
-    connectionHandler& m_connectionHandle;
+    void connectSignalsToSlots();
+    void getHostIp();
+    void getHostPort();
+
+    QString m_hostIp;
+    QString m_hostPort;
+
     Ui::ChatWindow *ui;
 
 private slots:

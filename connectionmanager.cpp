@@ -1,75 +1,76 @@
 #include <QEventLoop>
-#include "connectionhandler.h"
-#include "clientsocket.h"
-#include "serversocket.h"
+#include "connectionmanager.h"
+#include "client.h"
+#include "server.h"
 
-connectionHandler::connectionHandler(QWidget* parent)
+connectionManager::connectionManager() : m_recvBuff(std::make_unique<char[]>(RECV_BUFF)),
+    m_sendBuff(std::make_unique<char[]>(RECV_BUFF))
 {
-
+    clearBuffs();
 }
 
-void connectionHandler::createClient(__socket_type t, sockaddr_in a){
+void connectionManager::createClient(sockaddr_in s, __socket_type t){
     m_app_type = applicationType::CLIENT;
 
-    if(m_socketHandler == nullptr)
-        m_socketHandler = std::make_unique<clientSocket>(t, a);
+    if(m_hostHandler == nullptr)
+        m_hostHandler = std::make_unique<client>(s, t);
 
-    if(m_socketHandler->initSocket() == 0)
-        m_state = connectionStatus::ESTABLISHED;
-    else
-        m_state = connectionStatus::CONNECT_ERROR;
+    int l_state = m_hostHandler->initHost();
+    if(l_state == 0){
+        m_connectionState = connectionStatus::ESTABLISHED;
+        createReadThread();
+    }
+    else if(l_state == -1)
+        m_connectionState = connectionStatus::SOCKET_ERROR;
+    else if(l_state == -2)
+        m_connectionState = connectionStatus::CONNECT_ERROR;
 }
 
-void connectionHandler::createServer(__socket_type t, sockaddr_in a){
+void connectionManager::createServer(sockaddr_in s, __socket_type t){
     m_app_type = applicationType::SERVER;
 
-    if(m_socketHandler == nullptr)
-        m_socketHandler = std::make_unique<serverSocket>(t, a);
+    if(m_hostHandler == nullptr)
+        m_hostHandler = std::make_unique<server>(s, t);
 
-    int l_state = m_socketHandler->initSocket();
-
-    if(l_state == 0)
-        m_state = connectionStatus::SERVER_READY;
+    int l_state = m_hostHandler->initHost();
+    if(l_state == 0){
+        m_connectionState = connectionStatus::SERVER_READY;
+        if(m_hostHandler->getSocketType() == SOCK_STREAM){
+            createAcceptConnectionThread(); //TCP
+        }
+        else{
+            createReadThread(); //UDP
+        }
+    }
     else if(l_state == -1)
-        m_state = connectionStatus::SOCKET_ERROR;
+        m_connectionState = connectionStatus::SOCKET_ERROR;
     else if(l_state == -2)
-        m_state = connectionStatus::BIND_ERROR;
+        m_connectionState = connectionStatus::BIND_ERROR;
     else if(l_state == 3)
-        m_state = connectionStatus::LISTEN_ERROR;
+        m_connectionState = connectionStatus::LISTEN_ERROR;
 }
 
-void connectionHandler::createWorkCycle(){
-    m_recvThread = std::thread(&connectionHandler::recvMessage, std::ref(*this));
+void connectionManager::createReadThread(){
+    m_recvThread = std::thread(&connectionManager::recvMsg, std::ref(*this));
     m_recvThread.detach();
 }
 
-void connectionHandler::createAcceptCycle(){
-    m_acceptConnection = std::thread(&connectionHandler::acceptConnection, std::ref(*this));
-    m_acceptConnection.detach();
+void connectionManager::createAcceptConnectionThread(){
+    m_acceptConnectionThread = std::thread(&connectionManager::acceptConnection, std::ref(*this));
+    m_acceptConnectionThread.detach();
 }
 
-void connectionHandler::closeSocket(){
-    m_socketHandler->closeSocket();
+void connectionManager::closeSocket(){
+    m_hostHandler->~baseHost();
 }
 
-void connectionHandler::acceptConnection(){
-    if(m_socketHandler->acceptConnection() > 0){
-        emit signalAcceptConnection();
-        return;
-    }
+size_t connectionManager::sendMsg(QString s){
+    return m_hostHandler->sendMsg(s);
 }
 
-void connectionHandler::clearBuff(){
-    m_socketHandler->clearBuff();
-}
-
-size_t connectionHandler::sendMessage(QString s){
-    return m_socketHandler->sendMsg(s);
-}
-
-void connectionHandler::recvMessage(){
+void connectionManager::recvMsg(){
     while(true){
-        if(m_socketHandler->recvMsg() == 0){
+        if(m_hostHandler->recvMsg(m_recvBuff.get(), RECV_BUFF) == 0){
             emit signalCloseSocket();
             return;
         }
@@ -78,45 +79,35 @@ void connectionHandler::recvMessage(){
     }
 }
 
-
-//Getters
-
-
-char* connectionHandler::getRecvMessage(){
-    return m_socketHandler->getRecvBuff();
+void connectionManager::acceptConnection(){
+    if(m_hostHandler->acceptConnection() > 0){
+        emit signalAcceptConnection();
+        createReadThread();
+        return;
+    }
 }
 
-connectionStatus connectionHandler::getConnectionState(){
-    return m_state;
+void connectionManager::clearBuffs(){
+    memset(m_recvBuff.get(), 0, RECV_BUFF);
+    memset(m_sendBuff.get(), 0, RECV_BUFF);
 }
 
-applicationType connectionHandler::getAppType(){
+applicationType connectionManager::getAppType(){
     return m_app_type;
 }
 
-__socket_type connectionHandler::getSocketType(){
-    return m_socketHandler->getSocketType();
+__socket_type connectionManager::getSocketType(){
+    return this->m_hostHandler->getSocketType();
 }
 
-QString connectionHandler::getHostIP(){
-    QString l_res;
-    QEventLoop l_eventLoop;
-    QNetworkAccessManager l_networkManager;
-    QNetworkRequest l_request(QUrl("http://ipinfo.io/ip"));
-
-    QObject::connect(&l_networkManager, SIGNAL(finished(QNetworkReply*)), &l_eventLoop, SLOT(quit()));
-
-    std::unique_ptr<QNetworkReply> reply(l_networkManager.get(l_request));
-    l_eventLoop.exec();
-
-    if (reply->error() == QNetworkReply::NoError)
-        l_res = reply->readAll();
-    else
-        l_res = "Error";
-
-    return l_res;
+QString connectionManager::getRecvMessage(){
+    return QString(m_recvBuff.get());
 }
 
-QString connectionHandler::getHostPort(){
-    return QString::number(m_socketHandler->getSocketPort());
+connectionStatus connectionManager::getConnectionState(){
+    return m_connectionState;
+}
+
+size_t connectionManager::getInternalHostPort(){
+    return m_hostHandler->getInternalPort();
 }

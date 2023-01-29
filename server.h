@@ -1,22 +1,22 @@
-#ifndef SERVERSOCKET_H
-#define SERVERSOCKET_H
-#include "basesocket.h"
+#ifndef SERVER_H
+#define SERVER_H
+#include "basehost.h"
 
-class serverSocket : public baseSocket
+class server : public baseHost
 {
 public:
-    serverSocket(__socket_type t, sockaddr_in a);
-    ~serverSocket();
+    server(sockaddr_in a, __socket_type t);
+    ~server() = default;
 
-    int initSocket() override;
-    void closeSocket() override;
-    int acceptConnection() override;
-
+    int initHost() override;
     size_t sendMsg(QString&) override;
-    size_t recvMsg() override;
+    size_t recvMsg(char* b, size_t s) override;
+    int acceptConnection() override;
 
 private:
     int m_slaveSocket;
+    sockaddr_in m_slaveAddr;
+    socklen_t m_len;
 };
 
-#endif // SERVERSOCKET_H
+#endif // SERVER_H
