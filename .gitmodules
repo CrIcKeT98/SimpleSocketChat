@@ -1,4 +1,4 @@
 [submodule "external/cpp-upnp"]
 	path = external/cpp-upnp
-	url = ../../equalitie/cpp-upnp.git
+	url = https://github.com/equalitie/cpp-upnp.git
 
